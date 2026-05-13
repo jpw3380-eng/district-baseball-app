@@ -52,6 +52,18 @@ export default function TabLayout() {
     href: null,
   }}
 />
+<Tabs.Screen
+  name="resourceViewer"
+  options={{
+    href: null,
+  }}
+/>
+<Tabs.Screen
+  name="upcoming"
+  options={{
+    href: null,
+  }}
+/>
       <Tabs.Screen
         name="league"
         options={{

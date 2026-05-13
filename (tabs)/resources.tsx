@@ -4,7 +4,6 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
-  Linking,
   ScrollView,
 } from 'react-native';
 
@@ -14,15 +13,27 @@ const villaParkResources = [
     items: [
       {
         title: 'Majors Playoff Bracket',
-        url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTldb_YdOdt9VxKl96n2qS9N0xnFPF8VwBYPUrsGGnNituw1xtYQ4SbSsGPFkmmvFsUHuhkK5LdD5XT/pubhtml?gid=1166131430&single=true',
+        url:
+          'https://docs.google.com/gview?embedded=true&url=' +
+          encodeURIComponent(
+            'https://raw.githubusercontent.com/jpw3380-eng/district-baseball-app/main/assets/vp_majors_playoffs.pdf'
+          ),
       },
       {
         title: 'AAA Playoff Bracket',
-        url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTldb_YdOdt9VxKl96n2qS9N0xnFPF8VwBYPUrsGGnNituw1xtYQ4SbSsGPFkmmvFsUHuhkK5LdD5XT/pubhtml?gid=419235169&single=true',
+        url:
+          'https://docs.google.com/gview?embedded=true&url=' +
+          encodeURIComponent(
+            'https://raw.githubusercontent.com/jpw3380-eng/district-baseball-app/main/assets/vp_aaa_playoffs.pdf'
+          ),
       },
       {
         title: 'AA Playoff Bracket',
-        url: 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTldb_YdOdt9VxKl96n2qS9N0xnFPF8VwBYPUrsGGnNituw1xtYQ4SbSsGPFkmmvFsUHuhkK5LdD5XT/pubhtml?gid=564773458&single=true',
+        url:
+          'https://docs.google.com/gview?embedded=true&url=' +
+          encodeURIComponent(
+            'https://raw.githubusercontent.com/jpw3380-eng/district-baseball-app/main/assets/vp_aa_playoffs.pdf'
+          ),
       },
     ],
   },
@@ -31,7 +42,11 @@ const villaParkResources = [
     items: [
       {
         title: 'League Rules',
-        url: 'https://drive.google.com/file/d/1wvsYZAQFq12d5MLccYPavrj4WrV30Mop/preview',
+        url:
+          'https://docs.google.com/gview?embedded=true&url=' +
+          encodeURIComponent(
+            'https://raw.githubusercontent.com/jpw3380-eng/district-baseball-app/main/assets/vp_local_rules.pdf'
+          ),
       },
     ],
   },
@@ -42,10 +57,6 @@ export default function ResourcesScreen() {
   const router = useRouter();
 
   const isVillaPark = name === 'Villa Park Little League';
-
-  const openResource = (url: string) => {
-    Linking.openURL(url);
-  };
 
   return (
     <ScrollView style={styles.container}>
@@ -74,7 +85,7 @@ export default function ResourcesScreen() {
             }
           >
             <Text style={styles.mainTitle}>Teams</Text>
-            <Text style={styles.openText}>Tap to view team schedules</Text>
+            <Text style={styles.mainSubtitle}>Tap to view team schedules</Text>
           </TouchableOpacity>
 
           {villaParkResources.map((section) => (
@@ -85,7 +96,16 @@ export default function ResourcesScreen() {
                 <TouchableOpacity
                   key={resource.title}
                   style={styles.card}
-                  onPress={() => openResource(resource.url)}
+                  onPress={() =>
+                    router.push({
+                      pathname: '/resourceViewer',
+                      params: {
+                        name,
+                        title: resource.title,
+                        url: resource.url,
+                      },
+                    })
+                  }
                 >
                   <Text style={styles.resourceTitle}>{resource.title}</Text>
                   <Text style={styles.openText}>Tap to Open</Text>
@@ -130,6 +150,11 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: 'bold',
     color: '#ffffff',
+  },
+  mainSubtitle: {
+    marginTop: 6,
+    color: '#dbeafe',
+    fontWeight: '600',
   },
   sectionTitle: {
     fontSize: 20,
