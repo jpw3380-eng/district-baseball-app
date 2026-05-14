@@ -35,9 +35,7 @@ export default function UpcomingScreen() {
 
       <TouchableOpacity
         style={styles.card}
-        onPress={() => {
-          // future Chuck Kibby page
-        }}
+        onPress={() => router.push('/chuckKibby')}
       >
         <Text style={styles.cardTitle}>
           ⚾ Chuck Kibby Tournament

@@ -3,10 +3,10 @@ import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 export default function ResourceViewerScreen() {
-  const { title, url, name } = useLocalSearchParams<{
+  const { title, url, previousPage } = useLocalSearchParams<{
     title: string;
     url: string;
-    name: string;
+    previousPage: string;
   }>();
 
   const router = useRouter();
@@ -15,10 +15,7 @@ export default function ResourceViewerScreen() {
     <View style={styles.container}>
       <TouchableOpacity
         onPress={() =>
-          router.push({
-            pathname: '/resources',
-            params: { name },
-          })
+          router.push((previousPage as any) || '/resources')
         }
       >
         <Text style={styles.backButton}>← Back</Text>
@@ -38,7 +35,7 @@ export default function ResourceViewerScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: '#000000',
     paddingTop: 20,
   },
   backButton: {
@@ -46,13 +43,14 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginHorizontal: 20,
     marginBottom: 10,
-    color: '#0a2a66',
+    color: '#ffffff',
   },
   title: {
     fontSize: 18,
     fontWeight: 'bold',
     marginHorizontal: 20,
     marginBottom: 10,
+    color: '#ffffff',
   },
   webview: {
     flex: 1,

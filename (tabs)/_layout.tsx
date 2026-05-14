@@ -64,6 +64,12 @@ export default function TabLayout() {
     href: null,
   }}
 />
+<Tabs.Screen
+  name="chuckKibby"
+  options={{
+    href: null,
+  }}
+/>
       <Tabs.Screen
         name="league"
         options={{

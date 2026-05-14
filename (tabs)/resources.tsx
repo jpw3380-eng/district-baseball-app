@@ -103,6 +103,7 @@ export default function ResourcesScreen() {
                         name,
                         title: resource.title,
                         url: resource.url,
+                        previousPage: '/resources?name=Villa%20Park%20Little%20League',
                       },
                     })
                   }
