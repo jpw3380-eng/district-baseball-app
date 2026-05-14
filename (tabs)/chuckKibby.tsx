@@ -16,6 +16,14 @@ const chuckKibbyResources = [
         'https://raw.githubusercontent.com/jpw3380-eng/district-baseball-app/main/assets/ck_majorsRed_bracket.pdf'
       ),
   },
+  {
+  title: 'Majors Blue Bracket',
+  url:
+    'https://docs.google.com/gview?embedded=true&url=' +
+    encodeURIComponent(
+      'https://raw.githubusercontent.com/jpw3380-eng/district-baseball-app/main/assets/ck_majorsBlue_bracket.pdf'
+    ),
+},
 ];
 
 export default function ChuckKibbyScreen() {
