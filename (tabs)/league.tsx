@@ -5,11 +5,14 @@ import {
   StyleSheet,
   TouchableOpacity,
   Image,
+  Linking,
 } from 'react-native';
 
 export default function LeagueDetailScreen() {
   const { name } = useLocalSearchParams<{ name: string }>();
   const router = useRouter();
+
+  const isVillaPark = name === 'Villa Park Little League';
 
   return (
     <View style={styles.container}>
@@ -17,7 +20,7 @@ export default function LeagueDetailScreen() {
         <Text style={styles.backButton}>← Back</Text>
       </TouchableOpacity>
 
-      {name === 'Villa Park Little League' && (
+      {isVillaPark && (
         <Image
           source={require('../assets/images/vpll_logo.jpg')}
           style={styles.logo}
@@ -26,6 +29,15 @@ export default function LeagueDetailScreen() {
       )}
 
       <Text style={styles.title}>{name}</Text>
+
+      {isVillaPark && (
+        <TouchableOpacity
+          style={styles.appButton}
+          onPress={() => Linking.openURL('https://vpll-app.vercel.app')}
+        >
+          <Text style={styles.appButtonText}>Open VPLL App</Text>
+        </TouchableOpacity>
+      )}
 
       <TouchableOpacity
         style={styles.card}
@@ -103,8 +115,20 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 16,
     textAlign: 'center',
+  },
+  appButton: {
+    backgroundColor: '#0a2a66',
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginBottom: 14,
+    alignItems: 'center',
+  },
+  appButtonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   card: {
     backgroundColor: '#f2f2f2',

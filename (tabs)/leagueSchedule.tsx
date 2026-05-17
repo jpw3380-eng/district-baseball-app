@@ -63,8 +63,16 @@ export default function LeagueScheduleScreen() {
   const [loading, setLoading] = useState(true);
   const [selectedDivision, setSelectedDivision] = useState('All');
 
+  const isVillaPark = name === 'Villa Park Little League';
+
   useEffect(() => {
     const loadSchedule = async () => {
+      if (!isVillaPark) {
+        setGames([]);
+        setLoading(false);
+        return;
+      }
+
       try {
         const response = await fetch(VILLA_PARK_SCHEDULE_URL);
         const csvText = await response.text();
@@ -106,7 +114,7 @@ export default function LeagueScheduleScreen() {
     };
 
     loadSchedule();
-  }, []);
+  }, [isVillaPark]);
 
   const divisionOrder = [
     'All',
@@ -199,49 +207,53 @@ export default function LeagueScheduleScreen() {
 
       <Text style={styles.title}>{name} Schedule</Text>
 
-      <View style={styles.jumpRow}>
-        <TouchableOpacity style={styles.jumpButton} onPress={scrollToToday}>
-          <Text style={styles.jumpButtonText}>Today</Text>
-        </TouchableOpacity>
+      {isVillaPark && (
+        <>
+          <View style={styles.jumpRow}>
+            <TouchableOpacity style={styles.jumpButton} onPress={scrollToToday}>
+              <Text style={styles.jumpButtonText}>Today</Text>
+            </TouchableOpacity>
 
-        <TouchableOpacity style={styles.jumpButton} onPress={scrollToTop}>
-          <Text style={styles.jumpButtonText}>Top</Text>
-        </TouchableOpacity>
-      </View>
+            <TouchableOpacity style={styles.jumpButton} onPress={scrollToTop}>
+              <Text style={styles.jumpButtonText}>Top</Text>
+            </TouchableOpacity>
+          </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        style={styles.filterScroll}
-        contentContainerStyle={styles.filterContent}
-      >
-        {divisions.map((division) => (
-          <TouchableOpacity
-            key={division}
-            style={[
-              styles.filterButton,
-              selectedDivision === division && styles.filterButtonActive,
-            ]}
-            onPress={() => changeDivision(division)}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            style={styles.filterScroll}
+            contentContainerStyle={styles.filterContent}
           >
-            <Text
-              style={[
-                styles.filterText,
-                selectedDivision === division && styles.filterTextActive,
-              ]}
-            >
-              {division}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </ScrollView>
+            {divisions.map((division) => (
+              <TouchableOpacity
+                key={division}
+                style={[
+                  styles.filterButton,
+                  selectedDivision === division && styles.filterButtonActive,
+                ]}
+                onPress={() => changeDivision(division)}
+              >
+                <Text
+                  style={[
+                    styles.filterText,
+                    selectedDivision === division && styles.filterTextActive,
+                  ]}
+                >
+                  {division}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </>
+      )}
 
       <ScrollView ref={scrollRef} style={styles.scheduleScroll}>
         {loading ? (
           <View style={styles.card}>
             <Text>Loading schedule...</Text>
           </View>
-        ) : groupedGames.length > 0 ? (
+        ) : isVillaPark && groupedGames.length > 0 ? (
           groupedGames.map((group) => (
             <View
               key={group.date}
@@ -277,7 +289,7 @@ export default function LeagueScheduleScreen() {
           ))
         ) : (
           <View style={styles.card}>
-            <Text>No games found for this selection.</Text>
+            <Text>Schedule coming soon</Text>
           </View>
         )}
       </ScrollView>

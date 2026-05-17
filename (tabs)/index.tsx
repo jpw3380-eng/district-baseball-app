@@ -74,7 +74,7 @@ export default function HomeScreen() {
         <Text style={styles.cardTitle}>📅 Upcoming</Text>
 
         <Text style={styles.eventItem}>
-          • Tournament of Champions - May 26
+          • Tournament of Champions - May 31
         </Text>
 
         <Text style={styles.eventItem}>

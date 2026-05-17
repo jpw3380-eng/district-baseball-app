@@ -1,5 +1,11 @@
 import { useRouter } from 'expo-router';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from 'react-native';
 
 const leagues = [
   'Villa Park Little League',
@@ -20,6 +26,7 @@ export default function LeaguesScreen() {
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.title}>Leagues</Text>
+
       <Text style={styles.subtitle}>
         Select a district league to view schedules, standings, fields, and resources.
       </Text>
@@ -30,13 +37,16 @@ export default function LeaguesScreen() {
           style={styles.card}
           onPress={() =>
             router.push({
-              pathname: '/(tabs)/league',
+              pathname: '/league',
               params: { name: league },
             })
           }
         >
           <Text style={styles.leagueName}>{league}</Text>
-          <Text style={styles.cardText}>Tap to view league info</Text>
+
+          <Text style={styles.cardText}>
+            Tap to view league info
+          </Text>
         </TouchableOpacity>
       ))}
     </ScrollView>
