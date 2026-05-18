@@ -1,33 +1,58 @@
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
 } from 'react-native';
 
-const chuckKibbyResources = [
-  {
-    title: 'Majors Red Bracket',
-    url:
-      'https://docs.google.com/gview?embedded=true&url=' +
-      encodeURIComponent(
-        'https://raw.githubusercontent.com/jpw3380-eng/district-baseball-app/main/assets/ck_majorsRed_bracket.pdf'
-      ),
-  },
-  {
-  title: 'Majors Blue Bracket',
-  url:
-    'https://docs.google.com/gview?embedded=true&url=' +
-    encodeURIComponent(
-      'https://raw.githubusercontent.com/jpw3380-eng/district-baseball-app/main/assets/ck_majorsBlue_bracket.pdf'
-    ),
-},
-];
+const BRACKETS_URL =
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTldb_YdOdt9VxKl96n2qS9N0xnFPF8VwBYPUrsGGnNituw1xtYQ4SbSsGPFkmmvFsUHuhkK5LdD5XT/pub?gid=588167950&single=true&output=csv';
+
+type BracketItem = {
+  tournament: string;
+  title: string;
+  pdfUrl: string;
+};
 
 export default function ChuckKibbyScreen() {
   const router = useRouter();
+  const [brackets, setBrackets] = useState<BracketItem[]>([]);
+
+  useEffect(() => {
+    const loadBrackets = async () => {
+      try {
+        const response = await fetch(BRACKETS_URL);
+        const csvText = await response.text();
+
+        const rows = csvText.trim().split('\n').slice(1);
+
+        const parsed = rows
+          .map((row) => {
+            const columns = row.split(',');
+
+            return {
+              tournament: columns[0]?.trim() || '',
+              title: columns[1]?.trim() || '',
+              pdfUrl: columns[2]?.trim() || '',
+            };
+          })
+          .filter(
+            (item) =>
+              item.tournament === 'Chuck Kibby Tournament' &&
+              item.title &&
+              item.pdfUrl
+          );
+
+        setBrackets(parsed);
+      } catch (error) {
+        console.log('Chuck Kibby brackets load error:', error);
+      }
+    };
+
+    loadBrackets();
+  }, []);
 
   return (
     <ScrollView style={styles.container}>
@@ -37,25 +62,35 @@ export default function ChuckKibbyScreen() {
 
       <Text style={styles.title}>Chuck Kibby Tournament</Text>
 
-      {chuckKibbyResources.map((resource) => (
-        <TouchableOpacity
-          key={resource.title}
-          style={styles.card}
-          onPress={() =>
-            router.push({
-              pathname: '/resourceViewer',
-              params: {
-                title: resource.title,
-                url: resource.url,
-                previousPage: '/chuckKibby',
-              },
-            })
-          }
-        >
-          <Text style={styles.cardTitle}>{resource.title}</Text>
-          <Text style={styles.cardText}>Tap to open bracket</Text>
-        </TouchableOpacity>
-      ))}
+      {brackets.length > 0 ? (
+        brackets.map((bracket, index) => {
+          const viewerUrl =
+            'https://docs.google.com/gview?embedded=true&url=' +
+            encodeURIComponent(bracket.pdfUrl);
+
+          return (
+            <TouchableOpacity
+              key={`${bracket.title}-${index}`}
+              style={styles.card}
+              onPress={() =>
+                router.push({
+                  pathname: '/resourceViewer',
+                  params: {
+                    title: bracket.title,
+                    url: viewerUrl,
+                    previousPage: '/chuckKibby',
+                  },
+                })
+              }
+            >
+              <Text style={styles.cardTitle}>{bracket.title}</Text>
+              <Text style={styles.cardText}>Tap to open bracket</Text>
+            </TouchableOpacity>
+          );
+        })
+      ) : (
+        <Text style={styles.emptyText}>No brackets available yet.</Text>
+      )}
     </ScrollView>
   );
 }
@@ -93,5 +128,9 @@ const styles = StyleSheet.create({
   cardText: {
     color: '#d1d5db',
     fontSize: 15,
+  },
+  emptyText: {
+    color: '#d1d5db',
+    fontSize: 16,
   },
 });
