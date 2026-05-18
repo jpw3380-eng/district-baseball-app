@@ -14,6 +14,7 @@ type BracketItem = {
   tournament: string;
   title: string;
   pdfUrl: string;
+  version: string;
 };
 
 export default function ChuckKibbyScreen() {
@@ -33,10 +34,11 @@ export default function ChuckKibbyScreen() {
             const columns = row.split(',');
 
             return {
-              tournament: columns[0]?.trim() || '',
-              title: columns[1]?.trim() || '',
-              pdfUrl: columns[2]?.trim() || '',
-            };
+  tournament: columns[0]?.trim() || '',
+  title: columns[1]?.trim() || '',
+  pdfUrl: columns[2]?.trim() || '',
+  version: columns[3]?.trim() || '1',
+};
           })
           .filter(
             (item) =>
@@ -66,7 +68,7 @@ export default function ChuckKibbyScreen() {
         brackets.map((bracket, index) => {
           const viewerUrl =
             'https://docs.google.com/gview?embedded=true&url=' +
-            encodeURIComponent(bracket.pdfUrl);
+            encodeURIComponent(`${bracket.pdfUrl}?v=${bracket.version}`);
 
           return (
             <TouchableOpacity
