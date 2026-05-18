@@ -1,10 +1,9 @@
 import { useRouter } from 'expo-router';
 import {
-  View,
-  Text,
- StyleSheet,
   ScrollView,
-  TouchableOpacity,
+  StyleSheet,
+  Text,
+  TouchableOpacity
 } from 'react-native';
 
 export default function UpcomingScreen() {
@@ -68,7 +67,7 @@ export default function UpcomingScreen() {
         }}
       >
         <Text style={styles.cardTitle}>
-          📅 Presidents Meeting
+          📅 Presidents Meeting May 21
         </Text>
 
         <Text style={styles.cardText}>

@@ -1,20 +1,31 @@
-import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
   Image,
+  ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
+  View,
 } from 'react-native';
 
 const ANNOUNCEMENTS_URL =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vTldb_YdOdt9VxKl96n2qS9N0xnFPF8VwBYPUrsGGnNituw1xtYQ4SbSsGPFkmmvFsUHuhkK5LdD5XT/pub?gid=1003184179&single=true&output=csv';
 
+const UPCOMING_URL =
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTldb_YdOdt9VxKl96n2qS9N0xnFPF8VwBYPUrsGGnNituw1xtYQ4SbSsGPFkmmvFsUHuhkK5LdD5XT/pub?gid=154225636&single=true&output=csv';
+
+type UpcomingItem = {
+  title: string;
+  subtitle: string;
+  route: string;
+};
+
 export default function HomeScreen() {
   const router = useRouter();
 
   const [announcements, setAnnouncements] = useState<string[]>([]);
+  const [upcomingItems, setUpcomingItems] = useState<UpcomingItem[]>([]);
 
   useEffect(() => {
     const loadAnnouncements = async () => {
@@ -34,11 +45,37 @@ export default function HomeScreen() {
       }
     };
 
+    const loadUpcoming = async () => {
+      try {
+        const response = await fetch(UPCOMING_URL);
+        const csvText = await response.text();
+
+        const rows = csvText.trim().split('\n').slice(1);
+
+        const parsed = rows
+          .map((row) => {
+            const columns = row.split(',');
+
+            return {
+              title: columns[0]?.trim() || '',
+              subtitle: columns[1]?.trim() || '',
+              route: columns[2]?.trim() || '/upcoming',
+            };
+          })
+          .filter((item) => item.title);
+
+        setUpcomingItems(parsed);
+      } catch (error) {
+        console.log('Upcoming load error:', error);
+      }
+    };
+
     loadAnnouncements();
+    loadUpcoming();
   }, []);
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.container}>
       <Image
         source={require('../assets/district_logo.jpg')}
         style={styles.logo}
@@ -61,31 +98,29 @@ export default function HomeScreen() {
             </Text>
           ))
         ) : (
-          <Text style={styles.eventItem}>
-            No announcements yet
-          </Text>
+          <Text style={styles.eventItem}>No announcements yet</Text>
         )}
       </View>
 
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => router.push('/upcoming')}
-      >
+      <View style={styles.card}>
         <Text style={styles.cardTitle}>📅 Upcoming</Text>
 
-        <Text style={styles.eventItem}>
-          • Tournament of Champions - May 31
-        </Text>
-
-        <Text style={styles.eventItem}>
-          • All Stars Information Coming Soon
-        </Text>
-
-        <Text style={styles.eventItem}>
-          • Presidents Meeting - TBD
-        </Text>
-      </TouchableOpacity>
-    </View>
+        {upcomingItems.length > 0 ? (
+          upcomingItems.map((item, index) => (
+            <TouchableOpacity
+              key={`${item.title}-${index}`}
+              style={styles.upcomingButton}
+              onPress={() => router.push(item.route as any)}
+            >
+              <Text style={styles.upcomingTitle}>{item.title}</Text>
+              <Text style={styles.upcomingSubtitle}>{item.subtitle}</Text>
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text style={styles.eventItem}>No upcoming events yet</Text>
+        )}
+      </View>
+    </ScrollView>
   );
 }
 
@@ -123,7 +158,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontWeight: 'bold',
-    marginBottom: 6,
+    marginBottom: 8,
     color: '#ffffff',
     fontSize: 18,
   },
@@ -131,5 +166,21 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     marginTop: 6,
     fontSize: 15,
+  },
+  upcomingButton: {
+    backgroundColor: '#1f2937',
+    padding: 12,
+    borderRadius: 10,
+    marginTop: 10,
+  },
+  upcomingTitle: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  upcomingSubtitle: {
+    color: '#d1d5db',
+    marginTop: 4,
+    fontSize: 14,
   },
 });
