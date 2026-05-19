@@ -16,60 +16,84 @@ export default function TabLayout() {
           title: 'Leagues',
         }}
       />
-<Tabs.Screen
-  name="fields"
-  options={{
-    href: null,
-  }}
-/>
-<Tabs.Screen
-  name="leagueSchedule"
-  options={{
-    href: null,
-  }}
-/>
-<Tabs.Screen
-  name="leagueStandings"
-  options={{
-    href: null,
-  }}
-/>
-<Tabs.Screen
-  name="resources"
-  options={{
-    href: null,
-  }}
-/>
-<Tabs.Screen
-  name="teamSchedule"
-  options={{
-    href: null,
-  }}
-/>
-<Tabs.Screen
-  name="teamsList"
-  options={{
-    href: null,
-  }}
-/>
-<Tabs.Screen
-  name="resourceViewer"
-  options={{
-    href: null,
-  }}
-/>
-<Tabs.Screen
-  name="upcoming"
-  options={{
-    href: null,
-  }}
-/>
-<Tabs.Screen
-  name="chuckKibby"
-  options={{
-    href: null,
-  }}
-/>
+
+      <Tabs.Screen
+        name="fields"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="leagueSchedule"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="leagueStandings"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="resources"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="teamSchedule"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="teamsList"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="resourceViewer"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="upcoming"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="chuckKibby"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="toc"
+        options={{
+          href: null,
+        }}
+      />
+
+      <Tabs.Screen
+        name="allStars"
+        options={{
+          href: null,
+        }}
+      />
+
       <Tabs.Screen
         name="league"
         options={{
