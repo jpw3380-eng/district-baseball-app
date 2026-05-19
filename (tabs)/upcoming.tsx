@@ -3,7 +3,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
-  TouchableOpacity
+  TouchableOpacity,
 } from 'react-native';
 
 export default function UpcomingScreen() {
@@ -17,62 +17,30 @@ export default function UpcomingScreen() {
 
       <Text style={styles.title}>Upcoming Events</Text>
 
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => {
-          // future TOC page
-        }}
-      >
-        <Text style={styles.cardTitle}>
-          🏆 Tournament of Champions
-        </Text>
-
-        <Text style={styles.cardText}>
-          View tournament schedules and brackets
-        </Text>
+      <TouchableOpacity style={styles.card} onPress={() => router.push('/toc')}>
+        <Text style={styles.cardTitle}>🏆 Tournament of Champions</Text>
+        <Text style={styles.cardText}>View tournament schedules and brackets</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.card}
         onPress={() => router.push('/chuckKibby')}
       >
-        <Text style={styles.cardTitle}>
-          ⚾ Chuck Kibby Tournament
-        </Text>
-
-        <Text style={styles.cardText}>
-          Tournament schedules and information
-        </Text>
+        <Text style={styles.cardTitle}>⚾ Chuck Kibby Tournament</Text>
+        <Text style={styles.cardText}>Tournament schedules and information</Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.card}
-        onPress={() => {
-          // future All Stars page
-        }}
+        onPress={() => router.push('/allStars')}
       >
-        <Text style={styles.cardTitle}>
-          ⭐ All Stars
-        </Text>
-
-        <Text style={styles.cardText}>
-          Schedules and information coming soon
-        </Text>
+        <Text style={styles.cardTitle}>⭐ All Stars</Text>
+        <Text style={styles.cardText}>Schedules and information coming soon</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => {
-          // future Presidents page
-        }}
-      >
-        <Text style={styles.cardTitle}>
-          📅 Presidents Meeting May 21
-        </Text>
-
-        <Text style={styles.cardText}>
-          Meeting information and updates
-        </Text>
+      <TouchableOpacity style={styles.card} onPress={() => router.push('/')}>
+        <Text style={styles.cardTitle}>📅 Presidents Meeting May 21</Text>
+        <Text style={styles.cardText}>Meeting information and updates</Text>
       </TouchableOpacity>
     </ScrollView>
   );
