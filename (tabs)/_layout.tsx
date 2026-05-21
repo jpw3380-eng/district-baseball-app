@@ -67,11 +67,11 @@ export default function TabLayout() {
       />
 
       <Tabs.Screen
-        name="upcoming"
-        options={{
-          href: null,
-        }}
-      />
+  name="events"
+  options={{
+    href: null,
+  }}
+/>
 
       <Tabs.Screen
         name="chuckKibby"
@@ -93,7 +93,12 @@ export default function TabLayout() {
           href: null,
         }}
       />
-
+<Tabs.Screen
+  name="archive"
+  options={{
+    href: null,
+  }}
+/>
       <Tabs.Screen
         name="league"
         options={{

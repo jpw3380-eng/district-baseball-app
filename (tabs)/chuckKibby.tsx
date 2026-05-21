@@ -58,7 +58,7 @@ export default function ChuckKibbyScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <TouchableOpacity onPress={() => router.push('/upcoming')}>
+      <TouchableOpacity onPress={() => router.push('/events')}>
         <Text style={styles.backButton}>← Back</Text>
       </TouchableOpacity>
 

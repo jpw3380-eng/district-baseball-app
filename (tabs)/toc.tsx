@@ -1,9 +1,9 @@
-import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
-  Text,
-  StyleSheet,
   ScrollView,
+  StyleSheet,
+  Text,
   TouchableOpacity,
 } from 'react-native';
 
@@ -58,7 +58,7 @@ export default function TOCScreen() {
 
   return (
     <ScrollView style={styles.container}>
-      <TouchableOpacity onPress={() => router.push('/upcoming')}>
+      <TouchableOpacity onPress={() => router.push('/events')}>
         <Text style={styles.backButton}>← Back</Text>
       </TouchableOpacity>
 

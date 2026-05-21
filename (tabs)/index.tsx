@@ -2,6 +2,7 @@ import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
   Image,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
@@ -26,56 +27,71 @@ export default function HomeScreen() {
 
   const [announcements, setAnnouncements] = useState<string[]>([]);
   const [upcomingItems, setUpcomingItems] = useState<UpcomingItem[]>([]);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadAnnouncements = async () => {
+    try {
+      const response = await fetch(`${ANNOUNCEMENTS_URL}&t=${Date.now()}`);
+      const csvText = await response.text();
+
+      const rows = csvText.trim().split('\n').slice(1);
+
+      const parsed = rows
+        .map((row) => row.split(',')[0]?.trim())
+        .filter(Boolean);
+
+      setAnnouncements(parsed);
+    } catch (error) {
+      console.log('Announcements load error:', error);
+    }
+  };
+
+  const loadUpcoming = async () => {
+    try {
+      const response = await fetch(`${UPCOMING_URL}&t=${Date.now()}`);
+      const csvText = await response.text();
+
+      const rows = csvText.trim().split('\n').slice(1);
+
+      const parsed = rows
+        .map((row) => {
+          const columns = row.split(',');
+
+          return {
+            title: columns[0]?.trim() || '',
+            subtitle: columns[1]?.trim() || '',
+            route: columns[2]?.trim() || '/events',
+          };
+        })
+        .filter((item) => item.title);
+
+      setUpcomingItems(parsed);
+    } catch (error) {
+      console.log('Upcoming load error:', error);
+    }
+  };
+
+  const loadHomeData = async () => {
+    await Promise.all([loadAnnouncements(), loadUpcoming()]);
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadHomeData();
+    setRefreshing(false);
+  };
 
   useEffect(() => {
-    const loadAnnouncements = async () => {
-      try {
-        const response = await fetch(ANNOUNCEMENTS_URL);
-        const csvText = await response.text();
-
-        const rows = csvText.trim().split('\n').slice(1);
-
-        const parsed = rows
-          .map((row) => row.split(',')[0]?.trim())
-          .filter(Boolean);
-
-        setAnnouncements(parsed);
-      } catch (error) {
-        console.log('Announcements load error:', error);
-      }
-    };
-
-    const loadUpcoming = async () => {
-      try {
-        const response = await fetch(UPCOMING_URL);
-        const csvText = await response.text();
-
-        const rows = csvText.trim().split('\n').slice(1);
-
-        const parsed = rows
-          .map((row) => {
-            const columns = row.split(',');
-
-            return {
-              title: columns[0]?.trim() || '',
-              subtitle: columns[1]?.trim() || '',
-              route: columns[2]?.trim() || '/upcoming',
-            };
-          })
-          .filter((item) => item.title);
-
-        setUpcomingItems(parsed);
-      } catch (error) {
-        console.log('Upcoming load error:', error);
-      }
-    };
-
-    loadAnnouncements();
-    loadUpcoming();
+    loadHomeData();
   }, []);
 
   return (
-    <ScrollView style={styles.container}>
+    <ScrollView
+      style={styles.container}
+      refreshControl={
+        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+      }
+    >
       <Image
         source={require('../assets/district_logo.jpg')}
         style={styles.logo}
@@ -84,9 +100,7 @@ export default function HomeScreen() {
 
       <Text style={styles.title}>District 30 Little League</Text>
 
-      <Text style={styles.subtitle}>
-        Welcome to the official district app
-      </Text>
+      <Text style={styles.subtitle}>Welcome to the official district app</Text>
 
       <View style={styles.card}>
         <Text style={styles.cardTitle}>📣 Announcements</Text>
@@ -103,7 +117,7 @@ export default function HomeScreen() {
       </View>
 
       <View style={styles.card}>
-        <Text style={styles.cardTitle}>📅 Upcoming</Text>
+        <Text style={styles.cardTitle}>📅 Events</Text>
 
         {upcomingItems.length > 0 ? (
           upcomingItems.map((item, index) => (
@@ -117,7 +131,7 @@ export default function HomeScreen() {
             </TouchableOpacity>
           ))
         ) : (
-          <Text style={styles.eventItem}>No upcoming events yet</Text>
+          <Text style={styles.eventItem}>No events yet</Text>
         )}
       </View>
     </ScrollView>

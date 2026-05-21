@@ -6,7 +6,7 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
-export default function UpcomingScreen() {
+export default function EventsScreen() {
   const router = useRouter();
 
   return (
@@ -15,32 +15,58 @@ export default function UpcomingScreen() {
         <Text style={styles.backButton}>← Back</Text>
       </TouchableOpacity>
 
-      <Text style={styles.title}>Upcoming Events</Text>
-
-      <TouchableOpacity style={styles.card} onPress={() => router.push('/toc')}>
-        <Text style={styles.cardTitle}>🏆 Tournament of Champions</Text>
-        <Text style={styles.cardText}>View tournament schedules and brackets</Text>
-      </TouchableOpacity>
+      <Text style={styles.title}>Events</Text>
 
       <TouchableOpacity
         style={styles.card}
-        onPress={() => router.push('/chuckKibby')}
+        onPress={() => router.push('/toc')}
       >
-        <Text style={styles.cardTitle}>⚾ Chuck Kibby Tournament</Text>
-        <Text style={styles.cardText}>Tournament schedules and information</Text>
+        <Text style={styles.cardTitle}>
+          🏆 Tournament of Champions
+        </Text>
+
+        <Text style={styles.cardText}>
+          View tournament schedules and brackets
+        </Text>
       </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.card}
         onPress={() => router.push('/allStars')}
       >
-        <Text style={styles.cardTitle}>⭐ All Stars</Text>
-        <Text style={styles.cardText}>Schedules and information coming soon</Text>
+        <Text style={styles.cardTitle}>
+          ⭐ All Stars
+        </Text>
+
+        <Text style={styles.cardText}>
+          Schedules and information coming soon
+        </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.card} onPress={() => router.push('/')}>
-        <Text style={styles.cardTitle}>📅 Presidents Meeting May 21</Text>
-        <Text style={styles.cardText}>Meeting information and updates</Text>
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => router.push('/')}
+      >
+        <Text style={styles.cardTitle}>
+          📅 Presidents Meeting May 21
+        </Text>
+
+        <Text style={styles.cardText}>
+          7:00pm at North Sunrise LL
+        </Text>
+      </TouchableOpacity>
+
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => router.push('/archive')}
+      >
+        <Text style={styles.cardTitle}>
+          📚 Tournament Archive
+        </Text>
+
+        <Text style={styles.cardText}>
+          View past tournament brackets
+        </Text>
       </TouchableOpacity>
     </ScrollView>
   );
