@@ -15,17 +15,12 @@ export default function LeagueDetailScreen() {
   const isVillaPark = name === 'Villa Park Little League';
 
   const openVPLLApp = async () => {
-    const appUrl = 'vpllstorev2://';
-    const webUrl = 'https://vpll-app.vercel.app';
-
-    const supported = await Linking.canOpenURL(appUrl);
-
-    if (supported) {
-      await Linking.openURL(appUrl);
-    } else {
-      await Linking.openURL(webUrl);
-    }
-  };
+  try {
+    await Linking.openURL('vpllstorev2://');
+  } catch (error) {
+    await Linking.openURL('https://vpll-app.vercel.app');
+  }
+};
 
   return (
     <View style={styles.container}>
