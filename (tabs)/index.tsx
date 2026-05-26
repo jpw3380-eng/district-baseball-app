@@ -61,9 +61,10 @@ export default function HomeScreen() {
             title: columns[0]?.trim() || '',
             subtitle: columns[1]?.trim() || '',
             route: columns[2]?.trim() || '/events',
+            showOnHome: columns[3]?.trim()?.toLowerCase() === 'yes',
           };
         })
-        .filter((item) => item.title);
+        .filter((item) => item.title && item.showOnHome);
 
       setUpcomingItems(parsed);
     } catch (error) {

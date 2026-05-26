@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
 import {
   ScrollView,
@@ -6,8 +7,47 @@ import {
   TouchableOpacity,
 } from 'react-native';
 
+const EVENTS_URL =
+  'https://docs.google.com/spreadsheets/d/e/2PACX-1vTldb_YdOdt9VxKl96n2qS9N0xnFPF8VwBYPUrsGGnNituw1xtYQ4SbSsGPFkmmvFsUHuhkK5LdD5XT/pub?gid=154225636&single=true&output=csv';
+
+type EventItem = {
+  title: string;
+  subtitle: string;
+  route: string;
+};
+
 export default function EventsScreen() {
   const router = useRouter();
+  const [events, setEvents] = useState<EventItem[]>([]);
+
+  useEffect(() => {
+    const loadEvents = async () => {
+      try {
+        const response = await fetch(`${EVENTS_URL}&t=${Date.now()}`);
+        const csvText = await response.text();
+
+        const rows = csvText.trim().split('\n').slice(1);
+
+        const parsed = rows
+          .map((row) => {
+            const columns = row.split(',');
+
+           return {
+  title: columns[0]?.trim() || '',
+  subtitle: columns[1]?.trim() || '',
+  route: columns[2]?.trim() || '/events',
+};
+          })
+          .filter((item) => item.title && item.title !== 'Events');
+
+        setEvents(parsed);
+      } catch (error) {
+        console.log('Events load error:', error);
+      }
+    };
+
+    loadEvents();
+  }, []);
 
   return (
     <ScrollView style={styles.container}>
@@ -17,57 +57,20 @@ export default function EventsScreen() {
 
       <Text style={styles.title}>Events</Text>
 
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => router.push('/toc')}
-      >
-        <Text style={styles.cardTitle}>
-          🏆 Tournament of Champions
-        </Text>
-
-        <Text style={styles.cardText}>
-          View tournament schedules and brackets
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => router.push('/allStars')}
-      >
-        <Text style={styles.cardTitle}>
-          ⭐ All Stars
-        </Text>
-
-        <Text style={styles.cardText}>
-          Schedules and information coming soon
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => router.push('/')}
-      >
-        <Text style={styles.cardTitle}>
-          📅 Presidents Meeting May 21
-        </Text>
-
-        <Text style={styles.cardText}>
-          7:00pm at North Sunrise LL
-        </Text>
-      </TouchableOpacity>
-
-      <TouchableOpacity
-        style={styles.card}
-        onPress={() => router.push('/archive')}
-      >
-        <Text style={styles.cardTitle}>
-          📚 Tournament Archive
-        </Text>
-
-        <Text style={styles.cardText}>
-          View past tournament brackets
-        </Text>
-      </TouchableOpacity>
+      {events.length > 0 ? (
+        events.map((item, index) => (
+          <TouchableOpacity
+            key={`${item.title}-${index}`}
+            style={styles.card}
+            onPress={() => router.push(item.route as any)}
+          >
+            <Text style={styles.cardTitle}>{item.title}</Text>
+            <Text style={styles.cardText}>{item.subtitle}</Text>
+          </TouchableOpacity>
+        ))
+      ) : (
+        <Text style={styles.emptyText}>No events yet.</Text>
+      )}
     </ScrollView>
   );
 }
@@ -105,5 +108,9 @@ const styles = StyleSheet.create({
   cardText: {
     color: '#d1d5db',
     fontSize: 15,
+  },
+  emptyText: {
+    color: '#d1d5db',
+    fontSize: 16,
   },
 });

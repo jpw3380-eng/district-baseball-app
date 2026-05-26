@@ -1,11 +1,11 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
   Image,
   Linking,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function LeagueDetailScreen() {
@@ -13,6 +13,19 @@ export default function LeagueDetailScreen() {
   const router = useRouter();
 
   const isVillaPark = name === 'Villa Park Little League';
+
+  const openVPLLApp = async () => {
+    const appUrl = 'vpllstorev2://';
+    const webUrl = 'https://vpll-app.vercel.app';
+
+    const supported = await Linking.canOpenURL(appUrl);
+
+    if (supported) {
+      await Linking.openURL(appUrl);
+    } else {
+      await Linking.openURL(webUrl);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -31,10 +44,7 @@ export default function LeagueDetailScreen() {
       <Text style={styles.title}>{name}</Text>
 
       {isVillaPark && (
-        <TouchableOpacity
-          style={styles.appButton}
-          onPress={() => Linking.openURL('https://vpll-app.vercel.app')}
-        >
+        <TouchableOpacity style={styles.appButton} onPress={openVPLLApp}>
           <Text style={styles.appButtonText}>Open VPLL App</Text>
         </TouchableOpacity>
       )}
