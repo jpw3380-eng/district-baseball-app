@@ -10,7 +10,7 @@ import {
 const villaParkFields = [
   {
     name: 'Villa Park Little League',
-    address: '17852 Santiago Blvd, Villa Park, CA 92861',
+    address: '17852 Serrano Ave, Villa Park, CA 92861',
   },
 ];
 
