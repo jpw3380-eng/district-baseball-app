@@ -67,9 +67,8 @@ export default function UpcomingScreen() {
         }}
       >
         <Text style={styles.cardTitle}>
-          📅 Presidents Meeting May 21
+          📅 Coaches meeting May 27
         </Text>
-
         <Text style={styles.cardText}>
           Meeting information and updates
         </Text>
