@@ -1,9 +1,9 @@
 import { useRouter } from 'expo-router';
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
 } from 'react-native';
 
 export default function ArchiveScreen() {
@@ -16,6 +16,14 @@ export default function ArchiveScreen() {
       </TouchableOpacity>
 
       <Text style={styles.title}>Tournament Archive</Text>
+
+      <TouchableOpacity
+        style={styles.card}
+        onPress={() => router.push('/toc')}
+      >
+        <Text style={styles.cardTitle}>🏆 Tournament of Champions</Text>
+        <Text style={styles.cardText}>View archived TOC brackets</Text>
+      </TouchableOpacity>
 
       <TouchableOpacity
         style={styles.card}

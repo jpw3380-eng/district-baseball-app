@@ -9,15 +9,15 @@ import {
 
 const leagues = [
   'Villa Park Little League',
-  'Orange Little League',
-  'Tustin Western Little League',
-  'Tustin Eastern Little League',
-  'North Sunrise Little League',
-  'South Sunrise Little League',
   'Anaheim Hills Little League',
   'Memorial Park Little League',
   'North East Santa Ana Little League',
+  'North Sunrise Little League',
+  'Orange Little League',
   'Santiago Little League',
+  'South Sunrise Little League',
+  'Tustin Eastern Little League',
+   'Tustin Western Little League',
 ];
 
 export default function LeaguesScreen() {

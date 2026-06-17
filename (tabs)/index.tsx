@@ -1,13 +1,16 @@
 import { useRouter } from 'expo-router';
 import { useEffect, useState } from 'react';
+import * as Notifications from 'expo-notifications';
+import * as Device from 'expo-device';
+import Constants from 'expo-constants';
 import {
   Image,
+  Linking,
   RefreshControl,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
 } from 'react-native';
 
 const ANNOUNCEMENTS_URL =
@@ -16,11 +19,79 @@ const ANNOUNCEMENTS_URL =
 const UPCOMING_URL =
   'https://docs.google.com/spreadsheets/d/e/2PACX-1vTldb_YdOdt9VxKl96n2qS9N0xnFPF8VwBYPUrsGGnNituw1xtYQ4SbSsGPFkmmvFsUHuhkK5LdD5XT/pub?gid=154225636&single=true&output=csv';
 
+const PUSH_TOKEN_URL =
+  'https://script.google.com/macros/s/AKfycbyh3Fym0_8NNEwxofPuMno_gFqvEBFQ_GySTqwWK8A5GJlppdBjpwPWwGNtW56iGWg1/exec';
+
 type UpcomingItem = {
   title: string;
   subtitle: string;
   route: string;
+  showOnHome: boolean;
 };
+
+async function savePushTokenToSheet(token: string) {
+  try {
+    await fetch(PUSH_TOKEN_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'text/plain;charset=utf-8',
+      },
+      body: JSON.stringify({
+        token,
+        device: Device.deviceName || Device.modelName || 'Unknown Device',
+      }),
+    });
+
+    console.log('Push token saved to sheet.');
+  } catch (error) {
+    console.log('Push token save error:', error);
+  }
+}
+
+async function registerForPushNotificationsAsync() {
+  if (!Device.isDevice) {
+    console.log('Push notifications require a physical device.');
+    return;
+  }
+
+  const { status: existingStatus } =
+    await Notifications.getPermissionsAsync();
+
+  let finalStatus = existingStatus;
+
+  if (existingStatus !== 'granted') {
+    const { status } =
+      await Notifications.requestPermissionsAsync();
+
+    finalStatus = status;
+  }
+
+  if (finalStatus !== 'granted') {
+    console.log('Push notification permission was not granted.');
+    return;
+  }
+
+  const projectId =
+    Constants.expoConfig?.extra?.eas?.projectId ??
+    Constants.easConfig?.projectId;
+
+  if (!projectId) {
+    console.log('No EAS project ID found for push notifications.');
+    return;
+  }
+
+  const token = (
+    await Notifications.getExpoPushTokenAsync({
+      projectId,
+    })
+  ).data;
+
+  console.log('EXPO PUSH TOKEN:', token);
+
+  await savePushTokenToSheet(token);
+
+  return token;
+}
 
 export default function HomeScreen() {
   const router = useRouter();
@@ -84,6 +155,7 @@ export default function HomeScreen() {
 
   useEffect(() => {
     loadHomeData();
+    registerForPushNotificationsAsync();
   }, []);
 
   return (
@@ -103,7 +175,18 @@ export default function HomeScreen() {
 
       <Text style={styles.subtitle}>Welcome to the official district app</Text>
 
-      <View style={styles.card}>
+      <TouchableOpacity
+        style={styles.websiteButton}
+        onPress={() =>
+          Linking.openURL(
+            'https://tshq.bluesombrero.com/Default.aspx?tabid=1515770'
+          )
+        }
+      >
+        <Text style={styles.websiteButtonText}>🌐 Visit District 30 Website</Text>
+      </TouchableOpacity>
+
+      <ScrollView style={styles.card}>
         <Text style={styles.cardTitle}>📣 Announcements</Text>
 
         {announcements.length > 0 ? (
@@ -115,9 +198,9 @@ export default function HomeScreen() {
         ) : (
           <Text style={styles.eventItem}>No announcements yet</Text>
         )}
-      </View>
+      </ScrollView>
 
-      <View style={styles.card}>
+      <ScrollView style={styles.card}>
         <Text style={styles.cardTitle}>📅 Events</Text>
 
         {upcomingItems.length > 0 ? (
@@ -134,7 +217,7 @@ export default function HomeScreen() {
         ) : (
           <Text style={styles.eventItem}>No events yet</Text>
         )}
-      </View>
+      </ScrollView>
     </ScrollView>
   );
 }
@@ -161,9 +244,21 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 16,
-    marginBottom: 20,
+    marginBottom: 14,
     textAlign: 'center',
     color: '#d1d5db',
+  },
+  websiteButton: {
+    backgroundColor: '#0a2a66',
+    padding: 12,
+    borderRadius: 10,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  websiteButtonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
   card: {
     backgroundColor: '#111827',
@@ -173,9 +268,9 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontWeight: 'bold',
-    marginBottom: 8,
     color: '#ffffff',
     fontSize: 18,
+    marginBottom: 8,
   },
   eventItem: {
     color: '#ffffff',

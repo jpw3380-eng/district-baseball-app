@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'expo-router';
+import Papa from 'papaparse';
 import {
+  Modal,
   ScrollView,
   StyleSheet,
   Text,
   TouchableOpacity,
+  View,
 } from 'react-native';
 
 const EVENTS_URL =
@@ -14,11 +17,18 @@ type EventItem = {
   title: string;
   subtitle: string;
   route: string;
+  showOnHome: string;
+  details: string;
+  location: string;
+  date: string;
+  time: string;
+  link: string;
 };
 
 export default function EventsScreen() {
   const router = useRouter();
   const [events, setEvents] = useState<EventItem[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<EventItem | null>(null);
 
   useEffect(() => {
     const loadEvents = async () => {
@@ -26,18 +36,23 @@ export default function EventsScreen() {
         const response = await fetch(`${EVENTS_URL}&t=${Date.now()}`);
         const csvText = await response.text();
 
-        const rows = csvText.trim().split('\n').slice(1);
+        const result = Papa.parse(csvText, {
+          header: true,
+          skipEmptyLines: true,
+        });
 
-        const parsed = rows
-          .map((row) => {
-            const columns = row.split(',');
-
-           return {
-  title: columns[0]?.trim() || '',
-  subtitle: columns[1]?.trim() || '',
-  route: columns[2]?.trim() || '/events',
-};
-          })
+        const parsed = (result.data as any[])
+          .map((row) => ({
+            title: row.Title?.trim() || '',
+            subtitle: row.Subtitle?.trim() || '',
+            route: row.Route?.trim() || '/events',
+            showOnHome: row.ShowOnHome?.trim() || '',
+            details: row.Details?.trim() || '',
+            location: row.Location?.trim() || '',
+            date: row.Date?.trim() || '',
+            time: row.Time?.trim() || '',
+            link: row.Link?.trim() || '',
+          }))
           .filter((item) => item.title && item.title !== 'Events');
 
         setEvents(parsed);
@@ -49,68 +64,160 @@ export default function EventsScreen() {
     loadEvents();
   }, []);
 
+  const handleEventPress = (item: EventItem) => {
+    const hasExtraInfo =
+      item.details || item.location || item.date || item.time || item.link;
+
+    if (hasExtraInfo) {
+      setSelectedEvent(item);
+    } else {
+      router.push(item.route as any);
+    }
+  };
+
   return (
-    <ScrollView style={styles.container}>
-      <TouchableOpacity onPress={() => router.push('/')}>
-        <Text style={styles.backButton}>← Back</Text>
-      </TouchableOpacity>
+    <>
+      <ScrollView style={styles.container}>
+        <TouchableOpacity onPress={() => router.push('/')}>
+          <Text style={styles.backButton}>← Back</Text>
+        </TouchableOpacity>
 
-      <Text style={styles.title}>Events</Text>
+        <Text style={styles.title}>Events</Text>
 
-      {events.length > 0 ? (
-        events.map((item, index) => (
-          <TouchableOpacity
-            key={`${item.title}-${index}`}
-            style={styles.card}
-            onPress={() => router.push(item.route as any)}
-          >
-            <Text style={styles.cardTitle}>{item.title}</Text>
-            <Text style={styles.cardText}>{item.subtitle}</Text>
-          </TouchableOpacity>
-        ))
-      ) : (
-        <Text style={styles.emptyText}>No events yet.</Text>
-      )}
-    </ScrollView>
+        {events.length > 0 ? (
+          events.map((item, index) => (
+            <TouchableOpacity
+              key={`${item.title}-${index}`}
+              style={styles.card}
+              onPress={() => handleEventPress(item)}
+            >
+              <Text style={styles.cardTitle}>{item.title}</Text>
+
+              {!!item.subtitle && (
+                <Text style={styles.cardText}>{item.subtitle}</Text>
+              )}
+            </TouchableOpacity>
+          ))
+        ) : (
+          <Text style={styles.emptyText}>No events available.</Text>
+        )}
+      </ScrollView>
+
+      <Modal
+        visible={!!selectedEvent}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setSelectedEvent(null)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>{selectedEvent?.title}</Text>
+
+            {!!selectedEvent?.date && (
+              <Text style={styles.modalInfo}>📅 {selectedEvent.date}</Text>
+            )}
+
+            {!!selectedEvent?.time && (
+              <Text style={styles.modalInfo}>⏰ {selectedEvent.time}</Text>
+            )}
+
+            {!!selectedEvent?.location && (
+              <Text style={styles.modalInfo}>📍 {selectedEvent.location}</Text>
+            )}
+
+            {!!selectedEvent?.details && (
+              <Text style={styles.modalDetails}>{selectedEvent.details}</Text>
+            )}
+
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => setSelectedEvent(null)}
+            >
+              <Text style={styles.closeButtonText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000',
     padding: 20,
-    backgroundColor: '#000000',
   },
   backButton: {
-    fontSize: 16,
+    color: '#fff',
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 14,
-    color: '#ffffff',
+    marginBottom: 15,
   },
   title: {
-    fontSize: 26,
+    color: '#fff',
+    fontSize: 32,
     fontWeight: 'bold',
     marginBottom: 20,
-    color: '#ffffff',
   },
   card: {
-    backgroundColor: '#111827',
-    padding: 18,
-    borderRadius: 14,
-    marginBottom: 14,
+    backgroundColor: '#0f1d40',
+    borderRadius: 18,
+    padding: 20,
+    marginBottom: 15,
   },
   cardTitle: {
-    color: '#ffffff',
-    fontSize: 20,
+    color: '#fff',
+    fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 8,
+    marginBottom: 6,
   },
   cardText: {
     color: '#d1d5db',
-    fontSize: 15,
+    fontSize: 16,
   },
   emptyText: {
     color: '#d1d5db',
+    fontSize: 16,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.75)',
+    justifyContent: 'center',
+    padding: 20,
+  },
+  modalBox: {
+    backgroundColor: '#111827',
+    borderRadius: 20,
+    padding: 24,
+  },
+  modalTitle: {
+    color: '#fff',
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginBottom: 16,
+  },
+  modalInfo: {
+    color: '#d1d5db',
+    fontSize: 16,
+    marginBottom: 8,
+  },
+  modalDetails: {
+    color: '#fff',
+    fontSize: 16,
+    lineHeight: 24,
+    marginTop: 12,
+  },
+  closeButton: {
+    backgroundColor: '#2563eb',
+    padding: 14,
+    borderRadius: 12,
+    marginTop: 24,
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    color: '#fff',
+    fontWeight: 'bold',
     fontSize: 16,
   },
 });
