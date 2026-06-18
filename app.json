@@ -2,7 +2,7 @@
   "expo": {
     "name": "D30",
     "slug": "district-baseball-app",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "districtbaseballapp",
@@ -11,7 +11,7 @@
     "ios": {
   "supportsTablet": true,
   "bundleIdentifier": "com.jpwhid.districtbaseballapp",
-  "buildNumber": "25",
+  "buildNumber": "26",
   "infoPlist": {
     "ITSAppUsesNonExemptEncryption": false
   }
