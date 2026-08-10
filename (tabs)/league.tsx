@@ -14,13 +14,42 @@ export default function LeagueDetailScreen() {
 
   const isVillaPark = name === 'Villa Park Little League';
 
+  const instagramLinks: Record<string, string> = {
+    'Villa Park Little League':
+      'https://www.instagram.com/villa_park_little_league/',
+    'Anaheim Hills Little League':
+      'https://www.instagram.com/anaheimhillsll/',
+    'Orange Little League':
+      'https://www.instagram.com/oll_baseball/',
+    'Santiago Little League':
+      'https://www.instagram.com/santiago_little_league/',
+    'South Sunrise Little League':
+      'https://www.instagram.com/southsunrise/',
+    'Tustin Eastern Little League':
+      'https://www.instagram.com/tellbaseball/',
+    'Tustin Western Little League':
+      'https://www.instagram.com/tustinwestern/',
+  };
+
+  const instagramUrl = name ? instagramLinks[name] : undefined;
+
   const openVPLLApp = async () => {
-  try {
-    await Linking.openURL('vpllstorev2://');
-  } catch (error) {
-    await Linking.openURL('https://vpll-app.vercel.app');
-  }
-};
+    const appUrl = 'vpllstorev2://';
+    const appStoreUrl =
+      'https://apps.apple.com/us/app/villa-park-little-league/id6772785452';
+
+    try {
+      await Linking.openURL(appUrl);
+    } catch {
+      await Linking.openURL(appStoreUrl);
+    }
+  };
+
+  const openInstagram = () => {
+    if (instagramUrl) {
+      Linking.openURL(instagramUrl);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -41,6 +70,17 @@ export default function LeagueDetailScreen() {
       {isVillaPark && (
         <TouchableOpacity style={styles.appButton} onPress={openVPLLApp}>
           <Text style={styles.appButtonText}>Open VPLL App</Text>
+        </TouchableOpacity>
+      )}
+
+      {instagramUrl && (
+        <TouchableOpacity
+          style={styles.instagramButton}
+          onPress={openInstagram}
+        >
+          <Text style={styles.instagramButtonText}>
+            📸 Follow on Instagram
+          </Text>
         </TouchableOpacity>
       )}
 
@@ -132,6 +172,18 @@ const styles = StyleSheet.create({
   },
   appButtonText: {
     color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 16,
+  },
+  instagramButton: {
+    backgroundColor: '#f2f2f2',
+    paddingVertical: 14,
+    borderRadius: 12,
+    marginBottom: 14,
+    alignItems: 'center',
+  },
+  instagramButtonText: {
+    color: '#0a2a66',
     fontWeight: 'bold',
     fontSize: 16,
   },

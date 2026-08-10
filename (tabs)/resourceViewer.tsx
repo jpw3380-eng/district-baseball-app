@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 
 export default function ResourceViewerScreen() {
@@ -14,9 +14,7 @@ export default function ResourceViewerScreen() {
   return (
     <View style={styles.container}>
       <TouchableOpacity
-        onPress={() =>
-          router.push((previousPage as any) || '/resources')
-        }
+        onPress={() => router.push((previousPage as any) || '/resources')}
       >
         <Text style={styles.backButton}>← Back</Text>
       </TouchableOpacity>
@@ -24,9 +22,11 @@ export default function ResourceViewerScreen() {
       <Text style={styles.title}>{title}</Text>
 
       <WebView
-        source={{ uri: url }}
+        source={{ uri: String(url || '') }}
         style={styles.webview}
         startInLoadingState
+        javaScriptEnabled
+        domStorageEnabled
       />
     </View>
   );

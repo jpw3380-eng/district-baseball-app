@@ -1,7 +1,7 @@
-import { useRouter } from 'expo-router';
-import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useFocusEffect } from '@react-navigation/native';
+import { useRouter } from 'expo-router';
 import Papa from 'papaparse';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -50,14 +50,45 @@ type StandingRow = {
   runDiff: number;
 };
 
+const getTodayString = () => {
+  const today = new Date();
+  return `${today.getMonth() + 1}/${today.getDate()}/${today.getFullYear()}`;
+};
+
 export default function AllStarsScreen() {
   const router = useRouter();
+
+  const scrollViewRef = useRef<ScrollView>(null);
+  const gamePositions = useRef<Record<string, number>>({});
 
   const [brackets, setBrackets] = useState<BracketItem[]>([]);
   const [games, setGames] = useState<AllStarGame[]>([]);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedRound, setSelectedRound] = useState('All');
   const [selectedDivision, setSelectedDivision] = useState('All');
+  const [selectedBracket, setSelectedBracket] = useState<BracketItem | null>(
+    null
+  );
+  const [bracketDropdownOpen, setBracketDropdownOpen] = useState(false);
+
+  const todayString = getTodayString();
+
+  const scrollToTop = () => {
+    scrollViewRef.current?.scrollTo({ y: 0, animated: true });
+  };
+
+  const scrollToToday = () => {
+    const todayGameKey = Object.keys(gamePositions.current).find((key) =>
+      key.startsWith(todayString)
+    );
+
+    if (todayGameKey) {
+      scrollViewRef.current?.scrollTo({
+        y: Math.max(gamePositions.current[todayGameKey] - 20, 0),
+        animated: true,
+      });
+    }
+  };
 
   const loadBrackets = async () => {
     try {
@@ -79,12 +110,14 @@ export default function AllStarsScreen() {
         })
         .filter(
           (item) =>
-            item.tournament === 'All Stars' &&
-            item.title &&
-            item.pdfUrl
+            item.tournament === 'All Stars' && item.title && item.pdfUrl
         );
 
       setBrackets(parsed);
+
+      if (parsed.length > 0) {
+        setSelectedBracket((current) => current || parsed[0]);
+      }
     } catch (error) {
       console.log('All Stars brackets load error:', error);
     }
@@ -116,7 +149,9 @@ export default function AllStarsScreen() {
           pool: row.Pool?.trim() || '',
           notes: row.Notes?.trim() || '',
         }))
-        .filter((item) => item.round || item.division || item.team1 || item.team2);
+        .filter(
+          (item) => item.round || item.division || item.team1 || item.team2
+        );
 
       setGames(parsed);
     } catch (error) {
@@ -145,7 +180,9 @@ export default function AllStarsScreen() {
   };
 
   const rounds = useMemo(() => {
-    const unique = Array.from(new Set(games.map((g) => g.round).filter(Boolean)));
+    const unique = Array.from(
+      new Set(games.map((g) => g.round).filter(Boolean))
+    );
     return ['All', ...unique];
   }, [games]);
 
@@ -169,6 +206,31 @@ export default function AllStarsScreen() {
 
   const isDoubleElimination = (game: AllStarGame) =>
     game.format.toLowerCase().includes('double');
+
+  const openSelectedBracket = () => {
+    if (!selectedBracket) return;
+
+    const isGoogleSheet =
+      selectedBracket.pdfUrl.includes('docs.google.com') &&
+      selectedBracket.pdfUrl.includes('pubhtml');
+
+    const viewerUrl = isGoogleSheet
+      ? `${selectedBracket.pdfUrl}${
+          selectedBracket.pdfUrl.includes('?') ? '&' : '?'
+        }t=${Date.now()}`
+      : 'https://docs.google.com/gview?embedded=true&url=' +
+        encodeURIComponent(selectedBracket.pdfUrl) +
+        `&v=${selectedBracket.version}`;
+
+    router.push({
+      pathname: '/resourceViewer',
+      params: {
+        title: selectedBracket.title,
+        url: viewerUrl,
+        previousPage: '/allStars',
+      },
+    });
+  };
 
   const standingsByPool = useMemo(() => {
     const pools: Record<string, Record<string, StandingRow>> = {};
@@ -255,46 +317,76 @@ export default function AllStarsScreen() {
 
   return (
     <ScrollView
+      ref={scrollViewRef}
       style={styles.container}
       refreshControl={
         <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
       }
     >
       <Text style={styles.title}>⭐ All Stars</Text>
-      <Text style={styles.subtitle}>Brackets, schedules, scores, and standings</Text>
+      <Text style={styles.subtitle}>
+        Brackets, schedules, scores, and standings
+      </Text>
 
       <Text style={styles.sectionTitle}>🏆 Brackets</Text>
 
       {brackets.length > 0 ? (
-        brackets.map((bracket, index) => {
-          const viewerUrl =
-            'https://docs.google.com/gview?embedded=true&url=' +
-            encodeURIComponent(bracket.pdfUrl) +
-            `&v=${bracket.version}`;
+        <View style={styles.bracketSelectorCard}>
+          <Text style={styles.filterLabel}>Select Bracket</Text>
 
-          return (
+          <TouchableOpacity
+            style={styles.dropdownButton}
+            onPress={() => setBracketDropdownOpen(!bracketDropdownOpen)}
+          >
+            <Text style={styles.dropdownButtonText}>
+              {selectedBracket?.title || 'Choose a bracket'}
+            </Text>
+            <Text style={styles.dropdownArrow}>
+              {bracketDropdownOpen ? '▲' : '▼'}
+            </Text>
+          </TouchableOpacity>
+
+          {bracketDropdownOpen &&
+            brackets.map((bracket, index) => (
+              <TouchableOpacity
+                key={`${bracket.title}-${index}`}
+                style={styles.dropdownItem}
+                onPress={() => {
+                  setSelectedBracket(bracket);
+                  setBracketDropdownOpen(false);
+                }}
+              >
+                <Text style={styles.dropdownItemText}>{bracket.title}</Text>
+              </TouchableOpacity>
+            ))}
+
+          {selectedBracket && (
             <TouchableOpacity
-              key={`${bracket.title}-${index}`}
-              style={styles.bracketCard}
-              onPress={() =>
-                router.push({
-                  pathname: '/resourceViewer',
-                  params: {
-                    title: bracket.title,
-                    url: viewerUrl,
-                    previousPage: '/allStars',
-                  },
-                })
-              }
+              style={styles.openBracketButton}
+              onPress={openSelectedBracket}
             >
-              <Text style={styles.cardTitle}>{bracket.title}</Text>
-              <Text style={styles.cardText}>Tap to open bracket</Text>
+              <Text style={styles.openBracketButtonTitle}>
+                Open {selectedBracket.title}
+              </Text>
+              <Text style={styles.openBracketButtonText}>
+                Tap to view the selected bracket
+              </Text>
             </TouchableOpacity>
-          );
-        })
+          )}
+        </View>
       ) : (
         <Text style={styles.emptyText}>No All Stars brackets available yet.</Text>
       )}
+
+      <View style={styles.quickButtonRow}>
+        <TouchableOpacity style={styles.quickButton} onPress={scrollToToday}>
+          <Text style={styles.quickButtonText}>Today</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.quickButton} onPress={scrollToTop}>
+          <Text style={styles.quickButtonText}>Top</Text>
+        </TouchableOpacity>
+      </View>
 
       <Text style={styles.sectionTitle}>📅 Games</Text>
 
@@ -385,51 +477,78 @@ export default function AllStarsScreen() {
       <Text style={styles.gameCount}>{filteredGames.length} games listed</Text>
 
       {filteredGames.length > 0 ? (
-        filteredGames.map((game, index) => (
-          <View key={`${game.round}-${game.division}-${index}`} style={styles.gameCard}>
-            <View style={styles.cardTopRow}>
-              <Text style={styles.roundText}>{game.round || 'All Stars'}</Text>
+        filteredGames.map((game, index) => {
+          const gameKey = `${game.date}-${game.round}-${game.division}-${index}`;
 
-              {!!game.status && (
-                <Text
-                  style={[
-                    styles.statusBadge,
-                    game.status.toLowerCase() === 'final' && styles.finalBadge,
-                  ]}
-                >
-                  {game.status}
+          return (
+            <View
+              key={gameKey}
+              style={[
+                styles.gameCard,
+                game.date === todayString && styles.todayGameCard,
+              ]}
+              onLayout={(event) => {
+                if (game.date === todayString) {
+                  gamePositions.current[gameKey] = event.nativeEvent.layout.y;
+                }
+              }}
+            >
+              <View style={styles.cardTopRow}>
+                <Text style={styles.roundText}>
+                  {game.date === todayString ? 'TODAY • ' : ''}
+                  {game.round || 'All Stars'}
+                </Text>
+
+                {game.date === todayString && (
+                  <TouchableOpacity
+                    style={styles.smallTopButton}
+                    onPress={scrollToTop}
+                  >
+                    <Text style={styles.smallTopButtonText}>Top</Text>
+                  </TouchableOpacity>
+                )}
+
+                {!!game.status && (
+                  <Text
+                    style={[
+                      styles.statusBadge,
+                      game.status.toLowerCase() === 'final' && styles.finalBadge,
+                    ]}
+                  >
+                    {game.status}
+                  </Text>
+                )}
+              </View>
+
+              {!!game.division && (
+                <Text style={styles.divisionText}>
+                  {game.division}
+                  {game.pool ? ` • ${game.pool}` : ''}
                 </Text>
               )}
-            </View>
 
-            {!!game.division && (
-              <Text style={styles.divisionText}>
-                {game.division}
-                {game.pool ? ` • ${game.pool}` : ''}
+              <View style={styles.matchupRow}>
+                <Text style={styles.teamText}>{game.team1 || 'TBD'}</Text>
+                {hasScore(game) && (
+                  <Text style={styles.scoreText}>{game.team1Score}</Text>
+                )}
+              </View>
+
+              <View style={styles.matchupRow}>
+                <Text style={styles.teamText}>{game.team2 || 'TBD'}</Text>
+                {hasScore(game) && (
+                  <Text style={styles.scoreText}>{game.team2Score}</Text>
+                )}
+              </View>
+
+              <Text style={styles.gameDetails}>
+                {[game.date, game.time, game.field].filter(Boolean).join(' • ')}
               </Text>
-            )}
 
-            <View style={styles.matchupRow}>
-              <Text style={styles.teamText}>{game.team1 || 'TBD'}</Text>
-              {hasScore(game) && (
-                <Text style={styles.scoreText}>{game.team1Score}</Text>
-              )}
+              {!!game.notes && <Text style={styles.notes}>{game.notes}</Text>}
             </View>
-
-            <View style={styles.matchupRow}>
-              <Text style={styles.teamText}>{game.team2 || 'TBD'}</Text>
-              {hasScore(game) && (
-                <Text style={styles.scoreText}>{game.team2Score}</Text>
-              )}
-            </View>
-
-            <Text style={styles.gameDetails}>
-              {[game.date, game.time, game.field].filter(Boolean).join(' • ')}
-            </Text>
-
-            {!!game.notes && <Text style={styles.notes}>{game.notes}</Text>}
-          </View>
-        ))
+          );
+        })
       ) : (
         <Text style={styles.emptyText}>No games match these filters.</Text>
       )}
@@ -454,6 +573,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 20,
   },
+  quickButtonRow: {
+    flexDirection: 'row',
+    gap: 10,
+    marginBottom: 14,
+  },
+  quickButton: {
+    backgroundColor: '#2563eb',
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+  },
+  quickButtonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 15,
+  },
   sectionTitle: {
     color: '#ffffff',
     fontSize: 22,
@@ -461,21 +596,58 @@ const styles = StyleSheet.create({
     marginTop: 10,
     marginBottom: 12,
   },
-  bracketCard: {
+  bracketSelectorCard: {
     backgroundColor: '#111827',
-    padding: 18,
+    padding: 14,
     borderRadius: 14,
-    marginBottom: 14,
+    marginBottom: 18,
   },
-  cardTitle: {
-    color: '#ffffff',
-    fontSize: 20,
-    fontWeight: 'bold',
+  dropdownButton: {
+    backgroundColor: '#1f2937',
+    padding: 14,
+    borderRadius: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     marginBottom: 8,
   },
-  cardText: {
-    color: '#d1d5db',
+  dropdownButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    flex: 1,
+  },
+  dropdownArrow: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginLeft: 10,
+  },
+  dropdownItem: {
+    backgroundColor: '#0f172a',
+    padding: 13,
+    borderBottomWidth: 1,
+    borderBottomColor: '#374151',
+  },
+  dropdownItemText: {
+    color: '#ffffff',
     fontSize: 15,
+  },
+  openBracketButton: {
+    backgroundColor: '#0f1d40',
+    padding: 16,
+    borderRadius: 14,
+    marginTop: 8,
+  },
+  openBracketButtonTitle: {
+    color: '#ffffff',
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 6,
+  },
+  openBracketButtonText: {
+    color: '#d1d5db',
+    fontSize: 14,
   },
   filterLabel: {
     color: '#ffffff',
@@ -556,6 +728,10 @@ const styles = StyleSheet.create({
     padding: 18,
     marginBottom: 15,
   },
+  todayGameCard: {
+    borderWidth: 2,
+    borderColor: '#2563eb',
+  },
   cardTopRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -566,6 +742,19 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: 'bold',
     textTransform: 'uppercase',
+    flex: 1,
+  },
+  smallTopButton: {
+    backgroundColor: '#2563eb',
+    paddingVertical: 5,
+    paddingHorizontal: 10,
+    borderRadius: 12,
+    marginRight: 8,
+  },
+  smallTopButtonText: {
+    color: '#ffffff',
+    fontWeight: 'bold',
+    fontSize: 12,
   },
   statusBadge: {
     color: '#ffffff',

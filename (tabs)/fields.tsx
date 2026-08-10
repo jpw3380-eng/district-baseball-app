@@ -1,74 +1,173 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
+  Alert,
   Linking,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
-const villaParkFields = [
-  {
-    name: 'Villa Park Little League',
-    address: '17852 Serrano Ave, Villa Park, CA 92861',
-  },
-];
+type Field = {
+  name: string;
+  address: string;
+};
+
+const leagueFields: Record<string, Field[]> = {
+  'Villa Park Little League': [
+    {
+      name: 'Cerro Villa Middle School',
+      address: '17852 Serrano Ave, Villa Park, CA 92861',
+    },
+  ],
+
+  'Orange Little League': [
+    {
+      name: 'Portola Middle School',
+      address: '300 N Elm St, Orange, CA 92868',
+    },
+  ],
+
+  'Tustin Western Little League': [
+    {
+      name: 'Hewes Middle School',
+      address: '19061 Foothill Blvd, Santa Ana, CA 92705',
+    },
+  ],
+
+  'Tustin Eastern Little League': [
+    {
+      name: 'C.E. Utt Middle School',
+      address: '13601 Browning Ave, Tustin, CA 92780',
+    },
+  ],
+
+  'North Sunrise Little League': [
+    {
+      name: 'Handy Park',
+      address: '2100 E Oakmont Ave, Orange, CA 92867',
+    },
+  ],
+
+  'South Sunrise Little League': [
+    {
+      name: 'McPherson Athletic Facility',
+      address: '391 S Prospect St, Orange, CA 92869',
+    },
+  ],
+
+  'Anaheim Hills Little League': [
+    {
+      name: 'Crescent Elementary School',
+      address: '5001 Gerda Dr, Anaheim, CA 92807',
+    },
+  ],
+
+  'Memorial Park Little League': [
+    {
+      name: 'Memorial Park',
+      address: '2100 S Flower St, Santa Ana, CA 92707',
+    },
+  ],
+
+  'North East Santa Ana Little League': [
+    {
+      name: 'NESALL',
+      address: '2100 N Grand Ave, Santa Ana, CA 92705',
+    },
+  ],
+
+  'Santiago Little League': [
+    {
+      name: 'El Salvador Park',
+      address: '1825 W Civic Center Dr, Santa Ana, CA 92703',
+    },
+  ],
+};
 
 export default function FieldsScreen() {
-  const { name } = useLocalSearchParams<{ name: string }>();
+  const params = useLocalSearchParams<{ name?: string | string[] }>();
   const router = useRouter();
 
-  const openMap = (address: string) => {
-    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-      address
-    )}`;
+  const leagueName = Array.isArray(params.name)
+    ? params.name[0]
+    : params.name || '';
 
-    Linking.openURL(url);
+  const fields = leagueFields[leagueName] || [];
+
+  const openMap = async (field: Field) => {
+    const fullLocation = `${field.name}, ${field.address}`;
+    const encodedLocation = encodeURIComponent(fullLocation);
+
+    const mapUrl =
+      Platform.OS === 'ios'
+        ? `http://maps.apple.com/?q=${encodedLocation}`
+        : `https://www.google.com/maps/search/?api=1&query=${encodedLocation}`;
+
+    try {
+      const supported = await Linking.canOpenURL(mapUrl);
+
+      if (!supported) {
+        Alert.alert(
+          'Unable to Open Maps',
+          'A maps application could not be opened on this device.'
+        );
+        return;
+      }
+
+      await Linking.openURL(mapUrl);
+    } catch (error) {
+      console.error('Error opening map:', error);
+
+      Alert.alert(
+        'Unable to Open Maps',
+        'There was a problem opening directions.'
+      );
+    }
   };
 
-  const isVillaPark = name === 'Villa Park Little League';
-
-  return (
-    <View style={styles.container}>
-      <TouchableOpacity
-  onPress={() =>
+  const goBack = () => {
     router.push({
       pathname: '/league',
-      params: { name },
-    })
-  }
->
-  <Text style={styles.backButton}>← Back</Text>
-</TouchableOpacity>
+      params: { name: leagueName },
+    });
+  };
 
-      <Text style={styles.title}>{name} Fields</Text>
+  return (
+    <ScrollView style={styles.container}>
+      <TouchableOpacity onPress={goBack}>
+        <Text style={styles.backButton}>← Back</Text>
+      </TouchableOpacity>
 
-      {isVillaPark ? (
-        villaParkFields.map((field) => (
+      <Text style={styles.title}>
+        {leagueName ? `${leagueName} Fields` : 'League Fields'}
+      </Text>
+
+      {fields.length > 0 ? (
+        fields.map((field) => (
           <TouchableOpacity
-            key={field.name}
+            key={`${leagueName}-${field.name}`}
             style={styles.card}
-            onPress={() => openMap(field.address)}
+            activeOpacity={0.75}
+            onPress={() => openMap(field)}
           >
-            <Text style={styles.fieldName}>
-              {field.name}
-            </Text>
+            <Text style={styles.fieldName}>🏟️ {field.name}</Text>
 
-            <Text style={styles.address}>
-              {field.address}
-            </Text>
+            <Text style={styles.address}>{field.address}</Text>
 
-            <Text style={styles.mapLink}>
-              📍 Get Directions
-            </Text>
+            <Text style={styles.mapLink}>📍 Get Directions</Text>
           </TouchableOpacity>
         ))
       ) : (
         <View style={styles.card}>
-          <Text>Field info coming soon</Text>
+          <Text style={styles.noFields}>
+            No field information is available for this league.
+          </Text>
         </View>
       )}
-    </View>
+    </ScrollView>
   );
 }
 
@@ -87,7 +186,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
-    marginBottom: 20,
+    marginBottom: 18,
   },
   card: {
     backgroundColor: '#f2f2f2',
@@ -98,14 +197,20 @@ const styles = StyleSheet.create({
   fieldName: {
     fontSize: 18,
     fontWeight: 'bold',
+    marginBottom: 6,
   },
   address: {
-    marginTop: 6,
-    color: '#666',
+    fontSize: 15,
+    color: '#555555',
+    marginBottom: 10,
   },
   mapLink: {
-    marginTop: 10,
+    fontSize: 15,
     fontWeight: 'bold',
     color: '#0a2a66',
+  },
+  noFields: {
+    color: '#666666',
+    fontSize: 15,
   },
 });
