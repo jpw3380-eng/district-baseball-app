@@ -9,14 +9,19 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-  "supportsTablet": true,
-  "bundleIdentifier": "com.jpwhid.districtbaseballapp",
-  "buildNumber": "27",
-  "infoPlist": {
-    "ITSAppUsesNonExemptEncryption": false
-  }
-},
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jpwhid.districtbaseballapp",
+      "buildNumber": "27",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false,
+        "LSApplicationQueriesSchemes": [
+          "vpllstorev2"
+        ]
+      }
+    },
     "android": {
+      "package": "com.jpwhid.districtbaseballapp",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -43,7 +48,8 @@
             "backgroundColor": "#000000"
           }
         }
-      ]
+      ],
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true,
